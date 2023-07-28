@@ -8,8 +8,19 @@ const cors = require('cors');
 app.use(cors());
 app.use(bodyParser.json());
 
-// Separate file for database connection (db.js)
-require('./database/db');
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URL, {
+      useNewUrlParser: true, 
+      useUnifiedTopology: true
+    })
+  ;
+    console.log(`MongoDB Database Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
+}
 
 // Use Express Router for better route management
 const blogDataRoute = require('./routes/blogData.route');
@@ -23,6 +34,8 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`Server running at PORT ${PORT}`);
-});
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running at PORT ${PORT}`);
+  });
+})
